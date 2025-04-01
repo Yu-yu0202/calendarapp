@@ -108,7 +108,7 @@ export class PdfSettingModel {
     return result.affectedRows > 0;
   }
 
-  async getDefaultSettings(): PdfSetting {
+  async getDefaultSettings(): Promise<PdfSetting> {
     return {
       userId: 0,
       layoutSettings: {

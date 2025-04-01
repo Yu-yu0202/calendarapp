@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import config from '../config/config';
 import { User } from '../types';
 import PasswordUtil from '../utils/password';
@@ -6,20 +6,21 @@ import { AppError } from '../middlewares/errorHandler';
 
 export class AuthService {
   generateToken(user: Partial<User>): string {
-    return jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        is_admin: user.is_admin
-      },
-      config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn }
-    );
+    const payload = {
+      id: user.id,
+      username: user.username,
+      is_admin: user.is_admin
+    };
+    const secret: Secret = config.jwt.secret as string;
+    const options: SignOptions = { expiresIn: config.jwt.expiresIn };
+
+    return jwt.sign(payload, secret, options);
   }
 
   verifyToken(token: string): any {
+    const secret: Secret = config.jwt.secret as string;
     try {
-      return jwt.verify(token, config.jwt.secret);
+      return jwt.verify(token, secret);
     } catch (error) {
       throw new AppError('無効なトークンです。', 401);
     }

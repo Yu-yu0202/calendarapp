@@ -1,3 +1,4 @@
+const hours: number = 24;
 export const config = {
   // サーバー設定
   server: {
@@ -14,7 +15,7 @@ export const config = {
   // JWT設定
   jwt: {
     secret: process.env.JWT_SECRET || 'default_secret',
-    expiresIn: '24h',
+    expiresIn: (hours * 3600),
   },
   // CORS設定
   cors: {
