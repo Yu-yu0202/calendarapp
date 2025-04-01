@@ -1,6 +1,6 @@
 {
     "name": "calendar-app-backend",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "Calendar application backend",
     "main": "dist/app.js",
     "scripts": {
