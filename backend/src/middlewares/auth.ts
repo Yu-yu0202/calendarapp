@@ -24,6 +24,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
       username: string;
       is_admin: boolean;
     };
+
     next();
   } catch (error) {
     res.status(401).json({ message: '無効なトークンです。' });
