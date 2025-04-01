@@ -10,6 +10,7 @@
         "test": "jest"
     },
     "dependencies": {
+        "@types/multer": "^1.4.12",
         "bcryptjs": "^2.4.3",
         "calendar-app-backend": "file:",
         "cors": "^2.8.5",

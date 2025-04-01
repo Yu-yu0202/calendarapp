@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import eventRoutes from './routes/eventRoutes';
 import authRoutes from './routes/authRoutes';
 import pdfRoutes from './routes/pdfRoutes';
+import './routes/pdfRoutes'
 import userRoutes from './routes/userRoutes';
 
 dotenv.config();
@@ -18,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // ルートの設定
 app.use('/api/events', eventRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/pdf', pdfRoutes as unknown as express.RequestHandler);
+app.use('/api/pdf', pdfRoutes);
 app.use('/api/users', userRoutes);
 
 // エラーハンドリング
