@@ -53,7 +53,7 @@ export class AuthController {
       // JWTトークンの生成
       const token = jwt.sign(
         { id: user.id, username: user.username, is_admin: user.is_admin },
-        process.env.JWT_SECRET || 'default_secret',
+        process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
 
