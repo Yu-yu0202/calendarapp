@@ -27,7 +27,8 @@ export const config = {
   },
   // JWT設定
   jwt: {
-    secret: process.env.JWT_SECRET || 'default_secret',
+    secret: process.env.JWT_SECRET,
+
     expiresIn: (hours * 3600),
   },
   // CORS設定
