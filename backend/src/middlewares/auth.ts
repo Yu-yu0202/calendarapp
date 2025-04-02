@@ -20,10 +20,11 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   const token = authHeader.split(' ')[1];
 
   try {
-    req.user = jwt.verify(token, config.jwt.secret) as {
-      id: number;
-      username: string;
-      is_admin: boolean;
+    const decoded = jwt.verify(token, config.jwt.secret) as jwt.JwtPayload;
+    req.user = {
+      id: decoded.id as number,
+      username: decoded.username as string,
+      is_admin: decoded.is_admin as boolean,
     };
 
     next();
