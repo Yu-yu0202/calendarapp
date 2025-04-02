@@ -1,4 +1,17 @@
 const hours: number = 24;
+const requiredEnvVars = [
+  'DB_HOST',
+  'DB_USER',
+  'DB_PASSWORD',
+  'DB_NAME',
+  'JWT_SECRET'
+];
+function validateConfig() {
+  const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  }
+}
 export const config = {
   // サーバー設定
   server: {
@@ -29,4 +42,5 @@ export const config = {
   }
 };
 
+validateConfig();
 export default config;

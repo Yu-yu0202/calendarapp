@@ -13,11 +13,17 @@ export class UserService {
       throw new AppError('ユーザー名は50文字以下である必要があります。', 400);
     }
 
+    // ユーザー名の形式を正規表現でバリデーション
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!usernameRegex.test(username)) {
+      throw new AppError('ユーザー名は英数字、アンダースコア、ハイフンのみ使用可能です。', 400);
+    }
+
     const existingUser = await UserModel.findByUsername(username);
     if (existingUser) {
       throw new AppError('このユーザー名は既に使用されています。', 400);
     }
-  }
+}
 
   async createUser(userData: {
     username: string;
