@@ -53,6 +53,8 @@ export class AuthController {
       // JWTトークンの生成
       const token = jwt.sign(
         { id: user.id, username: user.username, is_admin: user.is_admin },
+        // config/config.tsでverify済み、よってignore
+        // @ts-ignore
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
