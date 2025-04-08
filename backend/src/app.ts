@@ -6,6 +6,9 @@ import authRoutes from './routes/authRoutes';
 import pdfRoutes from './routes/pdfRoutes';
 import './routes/pdfRoutes'
 import userRoutes from './routes/userRoutes';
+import https from 'https';
+import fs from 'fs';
+import config from './config/config';
 
 dotenv.config();
 
@@ -30,8 +33,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`サーバーがポート${PORT}で起動しました。`);
+const options = {
+  key: fs.readFileSync(config.ssl.key),
+  cert: fs.readFileSync(config.ssl.cert)
+};
+
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`HTTPSサーバーがポート${PORT}で起動しました。`);
 });
 
 export default app;

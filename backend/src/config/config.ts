@@ -4,7 +4,9 @@ const requiredEnvVars = [
   'DB_USER',
   'DB_PASSWORD',
   'DB_NAME',
-  'JWT_SECRET'
+  'JWT_SECRET',
+  'SSL_KEY',
+  'SSL_CERT'
 ];
 function validateConfig() {
   const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -40,6 +42,11 @@ export const config = {
   // パスワードハッシュ設定
   password: {
     saltRounds: 10,
+  },
+  // SSL設定
+  ssl: {
+    key: 'server.key',
+    cert: 'server.crt'
   }
 };
 
