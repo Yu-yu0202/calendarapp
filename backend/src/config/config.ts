@@ -29,7 +29,7 @@ export const config = {
   jwt: {
     secret: process.env.JWT_SECRET,
 
-    expiresIn: '24h', // Expires in 24 hours
+    expiresIn: hours * 60 * 60, // Expires in 24 hours
   },
   // CORS設定
   cors: {
