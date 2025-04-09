@@ -33,12 +33,11 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 const PORT = process.env.PORT || 3000;
 
-const options = {
-  key: fs.readFileSync(config.ssl.sslkeypath),
-  cert: fs.readFileSync(config.ssl.sslcertpath)
-};
-
 if (config.ssl.enabled) {
+  const options = {
+    key: fs.readFileSync(config.ssl.sslkeypath),
+    cert: fs.readFileSync(config.ssl.sslcertpath)
+  };
   https.createServer(options, app).listen(PORT, () => {
     console.log(`HTTPSサーバーがポート${PORT}で起動しました。`);
   });

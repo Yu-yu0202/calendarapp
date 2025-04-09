@@ -3,7 +3,10 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Calendar from '@/pages/Calendar'
 import Admin from '@/pages/Admin'
+import Login from '@/pages/Auth/Login'
 import Layout from '@/components/Layout'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const theme = createTheme({
   palette: {
@@ -19,15 +22,23 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Layout>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
         <Routes>
-          <Route path="/" element={<Calendar />} />
-          <Route path="/admin" element={<Admin />} />
+          {/* 公開ルート */}
+          <Route path="/login" element={<Login />} />
+
+          {/* 保護されたルート */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Calendar />} />
+              <Route path="/admin" element={<Admin />} />
+            </Route>
+          </Route>
         </Routes>
-      </Layout>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   )
 }
 

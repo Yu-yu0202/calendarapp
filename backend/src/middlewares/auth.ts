@@ -5,7 +5,7 @@ import config from '../config/config';
 interface UserPayload {
   id: number;
   username: string;
-  is_admin: boolean;
+  role: string;
 }
 
 declare global {
@@ -38,8 +38,29 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 };
 
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user?.is_admin) {
-    return res.status(403).json({ message: 'Admin privileges required' });
+  // 認証をまず確認
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication token required' });
   }
-  next();
+
+  try {
+    if (typeof config.jwt.secret !== 'string') {
+      throw new Error('JWT secret is not properly configured');
+    }
+
+    const decoded = jwt.verify(token, config.jwt.secret) as UserPayload;
+    req.user = decoded;
+    
+    // 管理者権限を確認
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin privileges required' });
+    }
+    
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid token' });
+  }
 };

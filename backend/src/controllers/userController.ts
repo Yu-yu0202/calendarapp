@@ -44,7 +44,7 @@ export class UserController {
     const userId = parseInt(req.params.id);
     const { is_admin } = req.body;
 
-    const success = await UserModel.update(userId, { is_admin });
+    const success = await UserModel.update(userId, { role: is_admin ? 'admin' : 'user' });
     if (!success) {
       throw new AppError('管理者権限の更新に失敗しました。', 400);
     }

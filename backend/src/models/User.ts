@@ -1,6 +1,8 @@
 import pool from '../config/database';
-import { User } from '../types';
+import * as Types from '../types';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+
+type User = Types.User;
 
 export class UserModel {
   async findAll(): Promise<User[]> {
@@ -12,8 +14,8 @@ export class UserModel {
 
   async create(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<number> {
     const [result] = await pool.execute<ResultSetHeader>(
-      'INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, ?)',
-      [user.username, user.password_hash, user.is_admin]
+      'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+      [user.username, user.email || null, user.password_hash, user.role]
     );
     return result.insertId;
   }
@@ -22,6 +24,14 @@ export class UserModel {
     const [rows] = await pool.execute<(User & RowDataPacket)[]>(
       'SELECT * FROM users WHERE username = ?',
       [username]
+    );
+    return rows[0] || null;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const [rows] = await pool.execute<(User & RowDataPacket)[]>(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
     );
     return rows[0] || null;
   }

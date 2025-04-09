@@ -56,8 +56,8 @@ const config: Config = {
   },
   ssl: {
     enabled: process.env.SSL_ENABLED === 'true',
-    sslkeypath: process.env.SSL_KEY_PATH!,
-    sslcertpath: process.env.SSL_CERT_PATH!,
+    sslkeypath: process.env.SSL_KEY_PATH || './ssl/Devkey.pem',
+    sslcertpath: process.env.SSL_CERT_PATH || './ssl/Devcert.pem'
   }
 };
 

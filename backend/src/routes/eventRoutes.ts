@@ -1,10 +1,10 @@
 import express from 'express';
 import eventController from '../controllers/eventController';
-import { authMiddleware } from '../middlewares/auth';
+import { authenticateToken } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.use(authMiddleware); // 認証ミドルウェアを適用
+router.use(authenticateToken); // 認証ミドルウェアを適用
 
 router.post('/', eventController.createEvent);
 router.get('/', eventController.getAllEvents);

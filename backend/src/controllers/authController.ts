@@ -6,12 +6,20 @@ import UserModel from '../models/User';
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
-      const { username, password, is_admin } = req.body;
+      const { username, email, password, role } = req.body;
 
       // ユーザー名の重複チェック
       const existingUser = await UserModel.findByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: 'このユーザー名は既に使用されています。' });
+      }
+
+      // メールアドレスの重複チェック
+      if (email) {
+        const existingEmail = await UserModel.findByEmail(email);
+        if (existingEmail) {
+          return res.status(400).json({ message: 'このメールアドレスは既に使用されています。' });
+        }
       }
 
       // パスワードのハッシュ化
@@ -21,8 +29,9 @@ export class AuthController {
       // ユーザーの作成
       const userId = await UserModel.create({
         username,
+        email,
         password_hash: passwordHash,
-        is_admin: is_admin || false
+        role: role || 'user'
       });
 
       res.status(201).json({
@@ -30,29 +39,36 @@ export class AuthController {
         userId
       });
     } catch (error) {
+      console.error('ユーザー作成エラー:', error);
       res.status(500).json({ message: 'ユーザーの作成に失敗しました。' });
     }
   }
 
   async login(req: Request, res: Response) {
     try {
-      const { username, password } = req.body;
+      const { email, password } = req.body;
 
       // ユーザーの検索
-      const user = await UserModel.findByUsername(username);
+      let user;
+      if (email) {
+        user = await UserModel.findByEmail(email);
+      } else {
+        return res.status(400).json({ message: 'メールアドレスが必要です。' });
+      }
+
       if (!user) {
-        return res.status(401).json({ message: 'ユーザー名またはパスワードが間違っています。' });
+        return res.status(401).json({ message: 'メールアドレスまたはパスワードが間違っています。' });
       }
 
       // パスワードの検証
       const isValidPassword = await bcrypt.compare(password, user.password_hash);
       if (!isValidPassword) {
-        return res.status(401).json({ message: 'ユーザー名またはパスワードが間違っています。' });
+        return res.status(401).json({ message: 'メールアドレスまたはパスワードが間違っています。' });
       }
 
       // JWTトークンの生成
       const token = jwt.sign(
-        { id: user.id, username: user.username, is_admin: user.is_admin },
+        { id: user.id, username: user.username, role: user.role },
         process.env.JWT_SECRET || 'default_secret',
         { expiresIn: '24h' }
       );
@@ -63,10 +79,12 @@ export class AuthController {
         user: {
           id: user.id,
           username: user.username,
-          is_admin: user.is_admin
+          email: user.email,
+          role: user.role
         }
       });
     } catch (error) {
+      console.error('ログインエラー:', error);
       res.status(500).json({ message: 'ログインに失敗しました。' });
     }
   }
@@ -97,6 +115,7 @@ export class AuthController {
 
       res.json({ message: 'パスワードを更新しました。' });
     } catch (error) {
+      console.error('パスワード更新エラー:', error);
       res.status(500).json({ message: 'パスワードの更新に失敗しました。' });
     }
   }
