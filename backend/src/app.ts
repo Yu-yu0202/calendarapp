@@ -28,7 +28,10 @@ app.use('/api/users', userRoutes);
 // エラーハンドリング
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'サーバーエラーが発生しました。' });
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({
+    message: process.env.NODE_ENV === 'production' ? 'サーバーエラーが発生しました。' : err.message,
+  });
 });
 
 const PORT = process.env.PORT || 3000;
