@@ -1,54 +1,64 @@
-const hours: number = 24;
-const requiredEnvVars = [
-  'DB_HOST',
-  'DB_USER',
-  'DB_PASSWORD',
-  'DB_NAME',
-  'JWT_SECRET',
-  'SSL_KEY',
-  'SSL_CERT'
-];
-function validateConfig() {
-  const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config();
+
+interface Config {
+  port: number;
+  db: {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+  };
+  jwt: {
+    secret: string;
+  };
+  ssl: {
+    enabled: boolean;
+    sslkeypath: string;
+    sslcertpath: string;
   }
 }
-export const config = {
-  // サーバー設定
-  server: {
-    port: process.env.PORT || 3000,
-    env: process.env.NODE_ENV || 'development',
-  },
-  // データベース設定
-  database: {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    name: process.env.DB_NAME || 'calendar_app',
-  },
-  // JWT設定
-  jwt: {
-    secret: process.env.JWT_SECRET,
 
-    expiresIn: (hours * 3600),
-  },
-  // CORS設定
-  cors: {
-    origin: process.env.CORS_ORIGIN || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  },
-  // パスワードハッシュ設定
-  password: {
-    saltRounds: 10,
-  },
-  // SSL設定
-  ssl: {
-    key: 'server.key',
-    cert: 'server.crt'
+const validateConfig = () => {
+  const requiredEnvVars = [
+    'DB_HOST',
+    'DB_USER',
+    'DB_PASSWORD',
+    'DB_NAME',
+    'JWT_SECRET'
+  ];
+
+  const missingVars = requiredEnvVars.filter(
+    (envVar) => !process.env[envVar]
+  );
+
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(', ')}`
+    );
   }
 };
 
 validateConfig();
+
+const config: Config = {
+  port: parseInt(process.env.PORT || '3000', 10),
+  db: {
+    host: process.env.DB_HOST!,
+    user: process.env.DB_USER!,
+    password: process.env.DB_PASSWORD!,
+    database: process.env.DB_NAME!,
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET!,
+  },
+  ssl: {
+    enabled: process.env.SSL_ENABLED === 'true',
+    sslkeypath: process.env.SSL_KEY_PATH!,
+    sslcertpath: process.env.SSL_CERT_PATH!,
+  }
+};
+
 export default config;

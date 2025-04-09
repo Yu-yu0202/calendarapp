@@ -1,40 +1,45 @@
-import {NextFunction, Request, Response} from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/config';
+import config from '../config/config';
 
-interface AuthRequest extends Request {
-  user?: {
-    id: number;
-    username: string;
-    is_admin: boolean;
-  };
+interface UserPayload {
+  id: number;
+  username: string;
+  is_admin: boolean;
 }
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserPayload;
+    }
+  }
+}
 
-  if (!authHeader) {
-    return res.status(401).json({ message: '認証が必要です。' });
+export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication token required' });
   }
 
-  const token = authHeader.split(' ')[1];
-
   try {
-    req.user = jwt.verify(token, config.jwt.secret) as {
-      id: number;
-      username: string;
-      is_admin: boolean;
-    };
+    if (typeof config.jwt.secret !== 'string') {
+      throw new Error('JWT secret is not properly configured');
+    }
 
+    const decoded = jwt.verify(token, config.jwt.secret) as UserPayload;
+    req.user = decoded;
     next();
-  } catch (error) {
-    res.status(401).json({ message: '無効なトークンです。' });
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid token' });
   }
 };
 
-export const adminAuthMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user?.is_admin) {
-    return res.status(403).json({ message: '管理者権限が必要です。' });
+    return res.status(403).json({ message: 'Admin privileges required' });
   }
   next();
 };

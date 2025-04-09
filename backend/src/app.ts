@@ -34,12 +34,18 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 const PORT = process.env.PORT || 3000;
 
 const options = {
-  key: fs.readFileSync(config.ssl.key),
-  cert: fs.readFileSync(config.ssl.cert)
+  key: fs.readFileSync(config.ssl.sslkeypath),
+  cert: fs.readFileSync(config.ssl.sslcertpath)
 };
 
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`HTTPSサーバーがポート${PORT}で起動しました。`);
-});
+if (config.ssl.enabled) {
+  https.createServer(options, app).listen(PORT, () => {
+    console.log(`HTTPSサーバーがポート${PORT}で起動しました。`);
+  });
+} else {
+  app.listen(PORT, () => {
+    console.log(`HTTPサーバーがポート${PORT}で起動しました。`);
+  });
+}
 
 export default app;
