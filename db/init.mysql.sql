@@ -1,3 +1,5 @@
+CREATE DATABASE calendar_app;
+use calendar_app;
 -- ユーザーテーブル（管理者用）
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,

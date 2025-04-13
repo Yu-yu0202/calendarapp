@@ -23,7 +23,7 @@ INSERT INTO users (
 );
 
 -- 初期管理者ユーザーのアクセス設定の作成
-INSERT INTO access_settings (
+INSERT INTO event_access_settings (
     user_id,
     event_id,
     access_level,
