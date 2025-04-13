@@ -16,8 +16,9 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
-      'faab-240f-42-3571-1-4851-27e2-9a9b-48f4.ngrok-free.app',
-      'localhost'
+      '*.ngrok-free.app',
+      'localhost',
+      '*.yu-yu0202.f5.si'
     ]
   },
   build: {
