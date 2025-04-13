@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
   Paper,
@@ -10,13 +10,19 @@ import {
   Alert,
 } from '@mui/material'
 import { login } from '@/api/authApi'
+import { useAuth } from '@/contexts/AuthContext'
 
 const Login = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { setUser } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // URLからリダイレクト情報を取得
+  const from = location.state?.from?.pathname || '/'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,8 +30,19 @@ const Login = () => {
     setIsLoading(true)
 
     try {
-      await login({ username, password })
-      navigate('/')
+      const response = await login({ username, password })
+      console.log('ログイン成功:', response)
+      
+      // ユーザー情報をコンテキストに設定
+      if (response && response.user) {
+        setUser(response.user)
+      }
+      
+      // 成功メッセージをコンソールに表示
+      console.log('ログインに成功しました。トップページにリダイレクトします。')
+      
+      // ホームページにリダイレクト
+      navigate('/', { replace: true })
     } catch (err: any) {
       console.error('ログインエラー:', err)
       setError(
