@@ -91,10 +91,9 @@ const Register = () => {
           />
           <TextField
             margin="normal"
-            required
             fullWidth
             id="email"
-            label="メールアドレス"
+            label="メールアドレス（任意）"
             name="email"
             autoComplete="email"
             value={email}

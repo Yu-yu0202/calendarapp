@@ -13,7 +13,7 @@ import { login } from '@/api/authApi'
 
 const Login = () => {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,12 +24,12 @@ const Login = () => {
     setIsLoading(true)
 
     try {
-      await login({ email, password })
+      await login({ username, password })
       navigate('/')
     } catch (err: any) {
       console.error('ログインエラー:', err)
       setError(
-        err.response?.data?.message || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。'
+        err.response?.data?.message || 'ログインに失敗しました。ユーザー名とパスワードを確認してください。'
       )
     } finally {
       setIsLoading(false)
@@ -71,13 +71,13 @@ const Login = () => {
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="メールアドレス"
-            name="email"
-            autoComplete="email"
+            id="username"
+            label="ユーザー名"
+            name="username"
+            autoComplete="username"
             autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <TextField
             margin="normal"

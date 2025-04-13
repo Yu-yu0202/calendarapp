@@ -6,13 +6,14 @@ export interface User {
 }
 
 export interface LoginPayload {
-  email: string;
+  username?: string;
+  email?: string;
   password: string;
 }
 
 export interface RegisterPayload {
   username: string;
-  email: string;
+  email?: string;
   password: string;
   role?: string;
 }

@@ -8,13 +8,18 @@ export class AuthController {
     try {
       const { username, email, password, role } = req.body;
 
+      // ユーザー名の必須チェック
+      if (!username) {
+        return res.status(400).json({ message: 'ユーザー名は必須です。' });
+      }
+
       // ユーザー名の重複チェック
       const existingUser = await UserModel.findByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: 'このユーザー名は既に使用されています。' });
       }
 
-      // メールアドレスの重複チェック
+      // メールアドレスの重複チェック（メールアドレスがある場合のみ）
       if (email) {
         const existingEmail = await UserModel.findByEmail(email);
         if (existingEmail) {
@@ -29,7 +34,7 @@ export class AuthController {
       // ユーザーの作成
       const userId = await UserModel.create({
         username,
-        email,
+        email, // emailはnullでも可
         password_hash: passwordHash,
         role: role || 'user'
       });
@@ -46,24 +51,26 @@ export class AuthController {
 
   async login(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
+      const { username, email, password } = req.body;
 
-      // ユーザーの検索
+      // ユーザーの検索（ユーザー名かメールアドレスで検索）
       let user;
-      if (email) {
+      if (username) {
+        user = await UserModel.findByUsername(username);
+      } else if (email) {
         user = await UserModel.findByEmail(email);
       } else {
-        return res.status(400).json({ message: 'メールアドレスが必要です。' });
+        return res.status(400).json({ message: 'ユーザー名またはメールアドレスが必要です。' });
       }
 
       if (!user) {
-        return res.status(401).json({ message: 'メールアドレスまたはパスワードが間違っています。' });
+        return res.status(401).json({ message: 'ユーザー名またはパスワードが間違っています。' });
       }
 
       // パスワードの検証
       const isValidPassword = await bcrypt.compare(password, user.password_hash);
       if (!isValidPassword) {
-        return res.status(401).json({ message: 'メールアドレスまたはパスワードが間違っています。' });
+        return res.status(401).json({ message: 'ユーザー名またはパスワードが間違っています。' });
       }
 
       // JWTトークンの生成

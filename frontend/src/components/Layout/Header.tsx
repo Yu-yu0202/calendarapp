@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem, IconButton } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { AccountCircle, CalendarMonth, AdminPanelSettings } from '@mui/icons-material'
+import { AccountCircle, CalendarMonth, AdminPanelSettings, PictureAsPdf } from '@mui/icons-material'
 import { useAuth } from '@/contexts/AuthContext'
 
 const Header = () => {
@@ -49,6 +49,17 @@ const Header = () => {
           >
             カレンダー
           </Button>
+
+          {isAuth && (
+            <Button
+              color="inherit"
+              component={RouterLink}
+              to="/pdf"
+              startIcon={<PictureAsPdf />}
+            >
+              PDF出力
+            </Button>
+          )}
 
           {isAuth && user?.role === 'admin' && (
             <Button
