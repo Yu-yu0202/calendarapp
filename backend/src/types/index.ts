@@ -7,6 +7,7 @@ export interface Event {
     is_holiday: boolean;
     is_recurring: boolean;
     recurrence_pattern: string | null;
+    color?: string;
     created_by: number;
     created_at?: Date;
     updated_at?: Date;

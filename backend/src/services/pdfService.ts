@@ -3,13 +3,15 @@ import { Event } from '../types';
 import { PdfSetting } from '../models/PdfSetting';
 import PdfSettingModel from '../models/PdfSetting';
 import dayjs from 'dayjs';
+import path from 'path';
+import fs from 'fs';
 
 interface PDFOptions {
   layout?: 'portrait' | 'landscape';
-  format?: 'A4' | 'A3';
+  backgroundImage?: string; // 背景画像のパス
+  style?: 'background' | 'top' | 'left'; // 背景画像の配置スタイル
   title?: string;
   showDescription?: boolean;
-  showTime?: boolean;
   userId?: number;
 }
 
@@ -33,8 +35,7 @@ export class PDFService {
     }
 
     // 設定の統合 (ユーザー設定とリクエスト設定)
-    const format = options.format || (userSettings?.layoutSettings.format || 'A4');
-    const layout = options.layout || (userSettings?.layoutSettings.orientation || 'landscape');
+    const layout = options.layout || (userSettings?.layoutSettings?.orientation || 'landscape');
     const margins = userSettings?.layoutSettings ? {
       top: userSettings.layoutSettings.marginTop,
       right: userSettings.layoutSettings.marginRight,
@@ -47,7 +48,7 @@ export class PDFService {
     // PDFドキュメントの初期化
     const doc = new PDFDocument({
       layout,
-      size: format,
+      size: 'A4',
       margin: margins.top,
       info: {
         Title: options.title || 'カレンダー',
@@ -55,6 +56,9 @@ export class PDFService {
         Creator: 'Calendar App',
       }
     });
+
+    // 背景画像の設定
+    this.applyBackgroundImage(doc, options);
 
     // フォント設定
     doc.font(fontFamily).fontSize(fontSize);
@@ -92,7 +96,6 @@ export class PDFService {
     while (currentMonth <= endMonth) {
       this.renderMonthCalendar(doc, currentMonth, events, {
         showDescription: options.showDescription || false,
-        showTime: options.showTime || false,
         fontSize
       });
       
@@ -102,6 +105,9 @@ export class PDFService {
       // 最後の月でなければ改ページ
       if (currentMonth <= endMonth) {
         doc.addPage();
+        
+        // 複数ページの場合、各ページに背景画像を適用
+        this.applyBackgroundImage(doc, options);
       }
     }
 
@@ -125,8 +131,65 @@ export class PDFService {
     return doc;
   }
 
+  // 背景画像を適用
+  private applyBackgroundImage(doc: PDFKit.PDFDocument, options: PDFOptions): void {
+    if (!options.backgroundImage) return;
+
+    let imagePath = options.backgroundImage;
+    
+    // 相対パスの場合は絶対パスに変換
+    if (!path.isAbsolute(imagePath)) {
+      imagePath = path.resolve(process.cwd(), 'public', 'uploads', imagePath);
+    }
+
+    // 画像ファイルが存在するか確認
+    if (!fs.existsSync(imagePath)) {
+      console.warn(`背景画像が見つかりません: ${imagePath}`);
+      return;
+    }
+
+    const style = options.style || 'background';
+
+    try {
+      switch (style) {
+        case 'background':
+          // 全体を覆う背景として配置
+          doc.image(imagePath, 0, 0, {
+            width: doc.page.width,
+            height: doc.page.height,
+            align: 'center',
+            valign: 'center'
+          });
+          break;
+        
+        case 'top':
+          // 上部に配置
+          doc.image(imagePath, 50, 50, {
+            width: doc.page.width - 100,
+            height: 200,
+            align: 'center'
+          });
+          doc.moveDown(14); // 画像の下にコンテンツを表示するため
+          break;
+        
+        case 'left':
+          // 左側に配置
+          doc.image(imagePath, 50, 50, {
+            width: 200,
+            height: doc.page.height - 100,
+            valign: 'center'
+          });
+          // 左マージンを調整
+          doc.text('', 270, 50);
+          break;
+      }
+    } catch (error) {
+      console.error(`背景画像の適用に失敗しました: ${error}`);
+    }
+  }
+
   // 月のカレンダーをレンダリング
-  private renderMonthCalendar(doc: PDFKit.PDFDocument, month: Date, events: Event[], options: { showDescription: boolean, showTime: boolean, fontSize: number }) {
+  private renderMonthCalendar(doc: PDFKit.PDFDocument, month: Date, events: Event[], options: { showDescription: boolean, fontSize: number }) {
     const year = month.getFullYear();
     const monthIndex = month.getMonth();
     const monthName = new Intl.DateTimeFormat('ja-JP', { month: 'long' }).format(month);
@@ -226,7 +289,7 @@ export class PDFService {
             const title = event.title.length > 15 ? event.title.substring(0, 12) + '...' : event.title;
             
             // イベント背景色
-            const bgColor = event.color || '#4285F4';
+            const bgColor = event.color || (event.is_holiday ? '#FF6666' : '#4285F4');
             doc.rect(x + 5, eventY, cellWidth - 10, 15)
               .fill(bgColor);
             
@@ -236,6 +299,20 @@ export class PDFService {
               .text(title, x + 7, eventY + 2, {
                 width: cellWidth - 14
               });
+            
+            // 説明文表示オプションがオンの場合
+            if (options.showDescription && event.description) {
+              eventY += 17;
+              const description = event.description.length > 20 
+                ? event.description.substring(0, 17) + '...' 
+                : event.description;
+              
+              doc.fill('#333333')
+                .fontSize(options.fontSize - 3)
+                .text(description, x + 7, eventY, {
+                  width: cellWidth - 14
+                });
+            }
             
             eventY += 17;
           });

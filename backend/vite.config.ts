@@ -1,11 +1,24 @@
+// @ts-ignore
 import { defineConfig } from 'vite';
+// @ts-ignore
 import path from 'path';
+// @ts-ignore
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  server: {
+    allowedHosts: [
+      'faab-240f-42-3571-1-4851-27e2-9a9b-48f4.ngrok-free.app',
+      'localhost'
+    ]
   },
   build: {
     // Node.js向けにバンドル

@@ -1,0 +1,9 @@
+Field,Type,Null,Key,Default,Extra
+id,int,NO,PRI,NULL,auto_increment
+user_id,int,NO,MUL,NULL,
+layout_settings,json,YES,,NULL,
+header_settings,json,YES,,NULL,
+footer_settings,json,YES,,NULL,
+font_settings,json,YES,,NULL,
+created_at,timestamp,YES,,CURRENT_TIMESTAMP,DEFAULT_GENERATED
+updated_at,timestamp,YES,,CURRENT_TIMESTAMP,"DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
