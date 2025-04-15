@@ -2,12 +2,43 @@ import { Request, Response } from 'express';
 import EventModel from '../models/Event';
 import { Event } from '../types';
 
+/**
+ * ISO形式の日付文字列をMySQLのdatetime形式に変換する
+ * @param dateStr ISO形式の日付文字列
+ * @returns MySQL対応の日付文字列（YYYY-MM-DD HH:MM:SS）
+ */
+function formatDateForMySQL(dateStr: string): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export class EventController {
   async createEvent(req: Request, res: Response) {
     try {
-      const event: Event = req.body;
-      console.log('イベント作成リクエスト:', event);
-      const id = await EventModel.create(event);
+      console.log('イベント作成リクエスト:', req.body);
+
+      const startDate = req.body.start_date || req.body.start;
+      const endDate = req.body.end_date || req.body.end;
+
+      const mysqlStartDate = startDate ? formatDateForMySQL(startDate) : formatDateForMySQL(new Date().toISOString());
+      const mysqlEndDate = endDate ? formatDateForMySQL(endDate) : formatDateForMySQL(new Date().toISOString());
+
+      const eventData: Event = {
+        title: req.body.title,
+        description: req.body.description || null,
+        start_date: new Date(mysqlStartDate),
+        end_date: new Date(mysqlEndDate),
+        is_holiday: req.body.is_holiday || false,
+        is_recurring: req.body.is_recurring || false,
+        recurrence_pattern: req.body.recurrence_pattern || null,
+        color: req.body.color || null,
+        created_by: (req as any).user?.id || null
+      };
+
+      console.log('変換後のイベントデータ:', eventData);
+
+      const id = await EventModel.create(eventData);
       res.status(201).json({ id, message: '予定を作成しました。' });
     } catch (error) {
       console.error('イベント作成エラー詳細:', error);
@@ -45,9 +76,36 @@ export class EventController {
   async updateEvent(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id);
-      const event: Partial<Event> = req.body;
-      console.log(`イベント更新リクエスト - ID: ${id}`, event);
-      const success = await EventModel.update(id, event);
+      
+      const requestData = { ...req.body };
+      const eventData: Partial<Event> = {};
+      
+      if (requestData.title !== undefined) eventData.title = requestData.title;
+      if (requestData.description !== undefined) eventData.description = requestData.description;
+      if (requestData.start !== undefined) {
+        const mysqlDate = formatDateForMySQL(requestData.start);
+        eventData.start_date = new Date(mysqlDate);
+      }
+      if (requestData.end !== undefined) {
+        const mysqlDate = formatDateForMySQL(requestData.end);
+        eventData.end_date = new Date(mysqlDate);
+      }
+      if (requestData.start_date !== undefined) {
+        const mysqlDate = formatDateForMySQL(requestData.start_date);
+        eventData.start_date = new Date(mysqlDate);
+      }
+      if (requestData.end_date !== undefined) {
+        const mysqlDate = formatDateForMySQL(requestData.end_date);
+        eventData.end_date = new Date(mysqlDate);
+      }
+      if (requestData.is_holiday !== undefined) eventData.is_holiday = requestData.is_holiday;
+      if (requestData.is_recurring !== undefined) eventData.is_recurring = requestData.is_recurring;
+      if (requestData.recurrence_pattern !== undefined) eventData.recurrence_pattern = requestData.recurrence_pattern;
+      if (requestData.color !== undefined) eventData.color = requestData.color;
+      
+      console.log(`イベント更新リクエスト - ID: ${id}`, eventData);
+      
+      const success = await EventModel.update(id, eventData);
       if (!success) {
         return res.status(404).json({ message: '予定が見つかりません。' });
       }
@@ -82,9 +140,12 @@ export class EventController {
         return res.status(400).json({ message: '開始日と終了日は必須です。' });
       }
       
+      const formattedStartDate = formatDateForMySQL(startDate as string);
+      const formattedEndDate = formatDateForMySQL(endDate as string);
+      
       const events = await EventModel.findByDateRange(
-        new Date(startDate as string),
-        new Date(endDate as string)
+        new Date(formattedStartDate),
+        new Date(formattedEndDate)
       );
       console.log(`日付範囲で取得したイベント数: ${events.length}`);
       res.json(events);

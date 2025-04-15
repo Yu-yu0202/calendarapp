@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// 直接localhostを使用して接続を確保
-const API_URL = 'http://localhost:3000/api';
+// ngrokのURLを使用してAPIサーバーに接続（HTTPSを使用）
+const API_URL = 'https://798b-240f-42-3571-1-54c1-93d2-e34e-3f9.ngrok-free.app/api';
 
 console.log('API URL設定:', API_URL);
 

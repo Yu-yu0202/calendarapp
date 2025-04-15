@@ -4,9 +4,15 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export class EventModel {
   async create(event: Event): Promise<number> {
+    const description = event.description === undefined ? null : event.description;
+    const is_holiday = event.is_holiday === undefined ? false : event.is_holiday;
+    const is_recurring = event.is_recurring === undefined ? false : event.is_recurring;
+    const recurrence_pattern = event.recurrence_pattern === undefined ? null : event.recurrence_pattern;
+    const created_by = event.created_by === undefined ? null : event.created_by;
+
     const [result] = await pool.execute<ResultSetHeader>(
       'INSERT INTO events (title, description, start_date, end_date, is_holiday, is_recurring, recurrence_pattern, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [event.title, event.description, event.start_date, event.end_date, event.is_holiday, event.is_recurring, event.recurrence_pattern, event.created_by]
+      [event.title, description, event.start_date, event.end_date, is_holiday, is_recurring, recurrence_pattern, created_by]
     );
     return result.insertId;
   }
@@ -27,9 +33,17 @@ export class EventModel {
   }
 
   async update(id: number, event: Partial<Event>): Promise<boolean> {
+    const title = event.title === undefined ? null : event.title;
+    const description = event.description === undefined ? null : event.description;
+    const start_date = event.start_date === undefined ? null : event.start_date;
+    const end_date = event.end_date === undefined ? null : event.end_date;
+    const is_holiday = event.is_holiday === undefined ? null : event.is_holiday;
+    const is_recurring = event.is_recurring === undefined ? null : event.is_recurring;
+    const recurrence_pattern = event.recurrence_pattern === undefined ? null : event.recurrence_pattern;
+
     const [result] = await pool.execute<ResultSetHeader>(
       'UPDATE events SET title = ?, description = ?, start_date = ?, end_date = ?, is_holiday = ?, is_recurring = ?, recurrence_pattern = ? WHERE id = ?',
-      [event.title, event.description, event.start_date, event.end_date, event.is_holiday, event.is_recurring, event.recurrence_pattern, id]
+      [title, description, start_date, end_date, is_holiday, is_recurring, recurrence_pattern, id]
     );
     return result.affectedRows > 0;
   }

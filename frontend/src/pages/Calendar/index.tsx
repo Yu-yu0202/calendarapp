@@ -9,6 +9,8 @@ import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/api/eventA
 import { Add as AddIcon } from '@mui/icons-material'
 
 const Calendar = () => {
+  console.log('カレンダーコンポーネントがレンダリングされました'); // デバッグログ
+  
   const [currentDate, setCurrentDate] = useState(dayjs())
   const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -33,10 +35,12 @@ const Calendar = () => {
   const fetchEventData = async () => {
     setIsLoading(true)
     try {
+      console.log('イベントデータを取得しています...'); // デバッグログ
       const data = await fetchEvents(
         startDate.format('YYYY-MM-DD'),
         endDate.format('YYYY-MM-DD')
       )
+      console.log('取得したイベントデータ:', data); // デバッグログ
       setEvents(data)
     } catch (error) {
       console.error('イベントの取得に失敗しました:', error)
@@ -47,6 +51,7 @@ const Calendar = () => {
   }
 
   useEffect(() => {
+    console.log('カレンダーの日付変更:', currentDate.format('YYYY-MM-DD')); // デバッグログ
     fetchEventData()
   }, [currentDate])
 
@@ -80,6 +85,7 @@ const Calendar = () => {
 
   const handleSaveEvent = async (eventData: CreateEventPayload) => {
     try {
+      console.log('イベントを保存しています:', eventData); // デバッグログ
       if (isEditMode && selectedEvent) {
         const updatedEventData: UpdateEventPayload = {
           ...eventData,
@@ -127,9 +133,11 @@ const Calendar = () => {
     })
   }
 
+  console.log('カレンダーのレンダリング...'); // デバッグログ
+
   return (
-    <Box>
-      <Paper elevation={3}>
+    <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
+      <Paper elevation={3} sx={{ minHeight: '80vh' }}>
         <Grid container direction="column">
           <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h5">カレンダー</Typography>
